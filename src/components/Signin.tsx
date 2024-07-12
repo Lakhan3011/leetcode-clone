@@ -1,5 +1,11 @@
-import { getAuth, sendSignInLinkToEmail } from "firebase/auth";
+import {
+  getAuth,
+  GoogleAuthProvider,
+  sendSignInLinkToEmail,
+  signInWithPopup,
+} from "firebase/auth";
 import { useState } from "react";
+import { auth } from "../App";
 const actionCodeSettings = {
   // URL you want to redirect back to. The domain (www.example.com) for this
   // URL must be in the authorized domains list in the Firebase Console.
@@ -8,45 +14,36 @@ const actionCodeSettings = {
   handleCodeInApp: true,
 };
 
-const Signin = () => {
-  const auth = getAuth();
-  const [email, setEmail] = useState("");
+const provider = new GoogleAuthProvider();
+export const Signin = () => {
   async function onSignin() {
-    await sendSignInLinkToEmail(auth, email, actionCodeSettings)
-      .then(() => {
-        // The link was successfully sent. Inform the user.
-        // Save the email locally so you don't need to ask the user for it again
-        // if they open the link on the same device.
-        window.localStorage.setItem("emailForSignIn", email);
-        alert("sent email");
+    signInWithPopup(auth, provider)
+      .then((result) => {
+        // This gives you a Google Access Token. You can use it to access the Google API.
+        const credential = GoogleAuthProvider.credentialFromResult(result);
+        if (!credential) {
+          return;
+        }
+        // The signed-in user info.
+        const user = result.user;
+        console.log(user);
+        // IdP data available using getAdditionalUserInfo(result)
         // ...
       })
-      .catch((error) => {
-        alert("email not sent");
-        const errorCode = error.code;
-        const errorMessage = error.message;
-        // ...
+      .catch(() => {
+        alert("erorr while signing in");
       });
   }
 
   return (
-    <div>
-      <input
-        type="text"
-        placeholder="email"
-        onChange={(e) => {
-          setEmail(e.target.value);
-        }}
-      />
+    <div className=" text-center">
       <button
         onClick={() => {
           onSignin();
         }}
       >
-        Signup
+        Login with google
       </button>
     </div>
   );
 };
-
-export default Signin;
