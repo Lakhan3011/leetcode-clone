@@ -5,7 +5,10 @@ import { Signin } from "./components/Signin";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { useEffect } from "react";
 import { userAtom } from "./store/atoms/user";
-import { useRecoilState, useSetRecoilState } from "recoil";
+import { RecoilRoot, useRecoilState, useSetRecoilState } from "recoil";
+import { Topbar } from "./components/Topbar";
+import { BrowserRouter as Route, Router, Routes } from "react-router-dom";
+import { Card } from "./components/Card";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -26,7 +29,17 @@ export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 
 function App() {
-  const setUser = useSetRecoilState(userAtom);
+  return (
+    <div>
+      <RecoilRoot>
+        <StoreApp />
+      </RecoilRoot>
+    </div>
+  );
+}
+
+function StoreApp() {
+  const [user, setUser] = useRecoilState(userAtom);
   useEffect(() => {
     onAuthStateChanged(auth, function (user) {
       if (user && user.email) {
@@ -45,12 +58,39 @@ function App() {
       }
     });
   }, []);
-  return (
-    <>
+
+  if (user.loading) {
+    return <div>Loading...</div>;
+  }
+  if (!user.user) {
+    return (
       <div>
         <Signin />
       </div>
-    </>
+    );
+  }
+  return (
+    <div className="place-items-center grid">
+      <div className="max-w-screen-lg w-full">
+        <Topbar />
+
+        {/* <Router>
+          <Topbar />
+          <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/activity" element={<Submissions />} />
+            <Route
+              path="/problems"
+              element={<ProblemList problemList={problemList} />}
+            />
+          </Routes>
+        </Router> */}
+        {/* <Leaderboard /> */}
+        {/* <Leaderboard leaderboard={leaderboardData} /> */}
+      </div>
+      <Card>hi there</Card>
+    </div>
   );
 }
 
