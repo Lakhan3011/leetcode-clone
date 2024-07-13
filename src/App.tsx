@@ -4,6 +4,8 @@ import { initializeApp } from "firebase/app";
 import { Signin } from "./components/Signin";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { useEffect } from "react";
+import { userAtom } from "./store/atoms/user";
+import { useRecoilState, useSetRecoilState } from "recoil";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -24,11 +26,21 @@ export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 
 function App() {
+  const setUser = useSetRecoilState(userAtom);
   useEffect(() => {
     onAuthStateChanged(auth, function (user) {
-      if (user) {
+      if (user && user.email) {
+        setUser({
+          loading: false,
+          user: {
+            email: user.email,
+          },
+        });
         console.log("This is the user", user);
       } else {
+        setUser({
+          loading: false,
+        });
         console.log("There is no logged in user");
       }
     });
